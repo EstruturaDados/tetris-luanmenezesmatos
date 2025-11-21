@@ -130,6 +130,34 @@ void mostrarPilha(Pilha *p) {
     printf("\n");
 }
 
+// Troca a peça da frente da fila com o topo da pilha
+int trocarFrenteFilaComTopoPilha(Fila *fila, Pilha *pilha) {
+    if (filaVazia(fila) || pilhaVazia(pilha)) {
+        return 0; // Não é possível trocar
+    }
+    int idxFila = fila->inicio;
+    int idxPilha = pilha->topo;
+    Peca temp = fila->itens[idxFila];
+    fila->itens[idxFila] = pilha->itens[idxPilha];
+    pilha->itens[idxPilha] = temp;
+    return 1;
+}
+
+// Troca os 3 primeiros da fila com os 3 da pilha
+int trocarTresFilaTresPilha(Fila *fila, Pilha *pilha) {
+    if (fila->tamanho < 3 || pilha->topo != 2) {
+        return 0; // Não é possível trocar
+    }
+    for (int i = 0; i < 3; i++) {
+        int idxFila = (fila->inicio + i) % TAM_FILA;
+        int idxPilha = pilha->topo - i;
+        Peca temp = fila->itens[idxFila];
+        fila->itens[idxFila] = pilha->itens[idxPilha];
+        pilha->itens[idxPilha] = temp;
+    }
+    return 1;
+}
+
 int main() {
     Fila fila;      // Fila de peças futuras
     Pilha pilha;    // Pilha de peças reservadas
@@ -152,20 +180,21 @@ int main() {
         mostrarFila(&fila);   // Exibe a fila atual
         mostrarPilha(&pilha); // Exibe a pilha atual
 
-        printf("\nOpções de ação:\n");
-        printf("1 - Jogar peça\n");
-        printf("2 - Reservar peça\n");
-        printf("3 - Usar peça reservada\n");
+        printf("\nOpções disponíveis:\n");
+        printf("1 - Jogar peça da frente da fila\n");
+        printf("2 - Enviar peça da fila para a pilha de reserva\n");
+        printf("3 - Usar peça da pilha de reserva\n");
+        printf("4 - Trocar peça da frente da fila com o topo da pilha\n");
+        printf("5 - Trocar os 3 primeiros da fila com as 3 peças da pilha\n");
         printf("0 - Sair\n");
-        printf("Escolha: ");
+        printf("Opção escolhida: ");
         scanf("%d", &opcao);
 
         switch (opcao) {
             case 1: // Jogar peça (remover da frente da fila)
                 if (dequeue(&fila, &p)) {
                     printf("Peça [%c %d] jogada!\n", p.tipo, p.id);
-                    // Mantém a fila cheia: gera nova peça e insere ao final
-                    enqueue(&fila, gerarPeca(idSeq++));
+                    enqueue(&fila, gerarPeca(idSeq++)); // Mantém a fila cheia
                 } else {
                     printf("Fila vazia! Não há peça para jogar.\n");
                 }
@@ -176,12 +205,10 @@ int main() {
                 } else if (pilhaCheia(&pilha)) {
                     printf("Pilha cheia! Não é possível reservar mais peças.\n");
                 } else {
-                    // Remove da fila e insere na pilha
                     dequeue(&fila, &p);
                     push(&pilha, p);
                     printf("Peça [%c %d] reservada!\n", p.tipo, p.id);
-                    // Mantém a fila cheia: gera nova peça e insere ao final
-                    enqueue(&fila, gerarPeca(idSeq++));
+                    enqueue(&fila, gerarPeca(idSeq++)); // Mantém a fila cheia
                 }
                 break;
             case 3: // Usar peça reservada (remove do topo da pilha)
@@ -189,6 +216,20 @@ int main() {
                     printf("Peça reservada [%c %d] usada!\n", p.tipo, p.id);
                 } else {
                     printf("Pilha vazia! Não há peça reservada para usar.\n");
+                }
+                break;
+            case 4: // Trocar peça da frente da fila com o topo da pilha
+                if (trocarFrenteFilaComTopoPilha(&fila, &pilha)) {
+                    printf("Troca realizada entre a frente da fila e o topo da pilha.\n");
+                } else {
+                    printf("Não é possível realizar a troca (verifique se há peças suficientes).\n");
+                }
+                break;
+            case 5: // Trocar os 3 primeiros da fila com as 3 peças da pilha
+                if (trocarTresFilaTresPilha(&fila, &pilha)) {
+                    printf("Troca realizada entre os 3 primeiros da fila e os 3 da pilha.\n");
+                } else {
+                    printf("Não é possível realizar a troca (são necessárias 3 peças em cada estrutura).\n");
                 }
                 break;
             case 0: // Sair do programa
